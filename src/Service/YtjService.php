@@ -4,6 +4,9 @@ namespace App\Service;
 
 use App\Entity\CompanyInfo;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use App\Exception\ServerException;
+use App\Exception\NotFoundException;
 
 class YtjService
 {
@@ -16,27 +19,38 @@ class YtjService
 
     function getCompanyInfo(string $id): CompanyInfo
     {
-        $response = $this->client->request(
-            'GET',
-            'https://avoindata.prh.fi/bis/v1/'.$id
-        );
 
-        $statusCode = $response->getStatusCode();
-        $content = $response->getContent();
+        $response = null;
+        $statusCode = null;
+        try {
+            $response = $this->client->request(
+                'GET',
+                'https://avoindata.prh.fi/bis/v1/'.$id
+            );
+            $statusCode = $response->getStatusCode();
+        }
+        catch (TransportExceptionInterface $e){
+            throw new ServerException($e);
+        }
 
-        $data = json_decode($response->getContent(), true);
+        if ($statusCode == 404){
+            throw new NotFoundException($id);
+        }else if ($statusCode != 200){
 
-        $companyInfo = new CompanyInfo;
-        $companyInfo->setName($data['results'][0]['name']);
-        $companyInfo->setWebsite($data['results'][0]['name']);
-        $companyInfo->setCurrentAddress(
-            $data['results'][0]['addresses'][0]['street'].', '
-            .$data['results'][0]['addresses'][0]['city'].', '
-            .$data['results'][0]['addresses'][0]['postCode']);
-        $companyInfo->setCurrentBusinessLine($data['results'][0]
-        ['businessLines'][0]['code']);
-        $companyInfo->setId($id);
+            $data = json_decode($response->getContent(), true);
 
-        return $companyInfo;
+            $companyInfo = new CompanyInfo;
+            $companyInfo->setName($data['results'][0]['name']);
+            $companyInfo->setWebsite($data['results'][0]['name']);
+            $companyInfo->setCurrentAddress(
+                $data['results'][0]['addresses'][0]['street'].', '
+                .$data['results'][0]['addresses'][0]['city'].', '
+                .$data['results'][0]['addresses'][0]['postCode']);
+            $companyInfo->setCurrentBusinessLine($data['results'][0]
+            ['businessLines'][0]['code']);
+            $companyInfo->setId($id);
+
+            return $companyInfo;
+        }
     }
 }

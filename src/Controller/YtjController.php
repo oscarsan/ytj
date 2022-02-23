@@ -2,11 +2,12 @@
 // src/Controller/YtjController.php
 namespace App\Controller;
 
+use App\Exception\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\CompanyInfo;
 use App\Service\YtjService;
+use App\Exception\ServerException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class YtjController extends AbstractController
@@ -22,7 +23,19 @@ class YtjController extends AbstractController
     public function number(string $id): Response
     {
 
-        $companyInfo = $this->ytjService->getCompanyInfo($id);
+        $companyInfo = null;
+
+        try {
+            $companyInfo = $this->ytjService->getCompanyInfo($id);
+        } catch (ServerException $e){
+            $response = new Response('', 500);
+            $response->headers->set('Content-Type', 'application/json');
+            return $response;
+        } catch (NotFoundException){
+            $response = new Response('Record not found', 404);
+            $response->headers->set('Content-Type', 'application/json');
+            return $response;
+        }
 
         $data = array(
            'id' => $companyInfo->getId(),
@@ -31,10 +44,10 @@ class YtjController extends AbstractController
            'current_address' => $companyInfo->getCurrentAddress(),
            'current_business_line' => $companyInfo->getCurrentBusinessLine(),
         );
-        return $this->json($data);
-        //$response = new Response(json_encode($data), 200);
-        //$response->headers->set('Content-Type', 'application/json');
-        //return $response;
+
+        $response = new Response($this->json($data), 200);
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
 
     }
 }
