@@ -5,8 +5,8 @@ namespace App\Service;
 use App\Entity\CompanyInfo;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use App\Exception\ServerException;
 use App\Exception\NotFoundException;
+use Exception;
 
 class YtjService
 {
@@ -20,6 +20,7 @@ class YtjService
     function getCompanyInfo(string $id): CompanyInfo
     {
 
+
         $response = null;
         $statusCode = null;
         try {
@@ -30,12 +31,12 @@ class YtjService
             $statusCode = $response->getStatusCode();
         }
         catch (TransportExceptionInterface $e){
-            throw new ServerException($e);
+            throw $e;
         }
 
         if ($statusCode == 404){
             throw new NotFoundException($id);
-        }else if ($statusCode != 200){
+        }else{
 
             $data = json_decode($response->getContent(), true);
 
@@ -53,4 +54,40 @@ class YtjService
             return $companyInfo;
         }
     }
+
+    function validate_company_id($company_id) {
+        // Some old company id's have only 6 digits. They should be prefixed with 0.
+        if (preg_match("/^[0-9]{6}\\-[0-9]{1}/", $company_id)) {
+          $company_id = '0' . $company_id;
+        }
+      
+        // Ensure that the company ID is entered in correct format.
+        if (!preg_match("/^[0-9]{7}\\-[0-9]{1}/", $company_id)) {
+          return FALSE;
+        }
+      
+        list($id, $checksum) = explode('-', $company_id);
+        $checksum = (int) $checksum;
+      
+        $total_count = 0;
+        $multipliers = [7, 9, 10, 5, 8, 4, 2];
+        foreach ($multipliers as $key => $multiplier) {
+          $total_count = $total_count + $multiplier * $id[$key];
+        }
+      
+        $remainder = $total_count % 11;
+      
+        // Remainder 1 is not valid.
+        if ($remainder === 1) {
+          return FALSE;
+        }
+      
+        // Remainder 0 leads into checksum 0.
+        if ($remainder === 0) {
+          return $checksum === $remainder;
+        }
+      
+        // If remainder is not 0, the checksum should be remainder deducted from 11.
+        return $checksum === 11 - $remainder;
+      }
 }

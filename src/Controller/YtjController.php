@@ -2,12 +2,13 @@
 // src/Controller/YtjController.php
 namespace App\Controller;
 
-use App\Exception\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\YtjService;
-use App\Exception\ServerException;
+
+use App\Exception\NotFoundException;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class YtjController extends AbstractController
@@ -27,14 +28,14 @@ class YtjController extends AbstractController
 
         try {
             $companyInfo = $this->ytjService->getCompanyInfo($id);
-        } catch (ServerException $e){
-            $response = new Response('', 500);
+        } catch (TransportExceptionInterface $e){
+            $response = new Response('error', 500);
             $response->headers->set('Content-Type', 'application/json');
             return $response;
         } catch (NotFoundException){
-            $response = new Response('Record not found', 404);
-            $response->headers->set('Content-Type', 'application/json');
-            return $response;
+             $response = new Response('Record not found', 404);
+             $response->headers->set('Content-Type', 'application/json');
+             return $response;
         }
 
         $data = array(
