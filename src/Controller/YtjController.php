@@ -25,8 +25,11 @@ class YtjController extends AbstractController
         $companyInfo = $this->ytjService->getCompanyInfo($id);
 
         $data = array(
-            'id' => $companyInfo->getId(),
-            'name' => $companyInfo->getName(),
+           'id' => $companyInfo->getId(),
+           'name' => $companyInfo->getName(),
+           'website' => $companyInfo->getwebsite(),
+           'current_address' => $companyInfo->getCurrentAddress(),
+           'current_business_line' => $companyInfo->getCurrentBusinessLine(),
         );
         return $this->json($data);
         //$response = new Response(json_encode($data), 200);

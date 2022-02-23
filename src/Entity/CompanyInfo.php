@@ -8,27 +8,58 @@ class CompanyInfo
 {
     private ?string $id = '';
 
-    public ?string $name = null;
+    private ?string $name = '';
 
-    public string $website = '';
+    private string $website = '';
 
-    public string $current_address = '';
+    private string $current_address = '';
 
-    public string $current_business_line = '';
+    private string $current_business_line = '';
 
 
     public function getId(): ?string
     {
         return $this->id;
     }
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
 
     public function getName(): ?string
     {
         return $this->name;
     }
-    
-    public function setId($id) 
+    public function setName($name)
     {
-        $this->id = $id;
+        $this->name = $name;
     }
+
+    public function getWebsite(): ?string
+    {
+        return $this->website;
+    }
+    public function setWebsite($website)
+    {
+        $this->website = $website;
+    }
+
+    public function getCurrentAddress(): ?string
+    {
+        return $this->current_address;
+    }
+    public function setCurrentAddress($current_address)
+    {
+        $this->current_address = $current_address;
+    }
+
+    public function getCurrentBusinessLine(): ?string
+    {
+        return $this->current_business_line;
+    }
+    public function setCurrentBusinessLine($current_business_line)
+    {
+        $this->current_business_line = $current_business_line;
+    }
+
 }
