@@ -6,14 +6,17 @@ use App\Entity\CompanyInfo;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use App\Exception\YtjServiceException;
+use Psr\Log\LoggerInterface;
 
 class YtjService
 {
     private $client;
+    private $logger;
 
-    public function __construct(HttpClientInterface $client)
+    public function __construct(HttpClientInterface $client, LoggerInterface $logger)
     {
         $this->client = $client;
+        $this->logger = $logger;
     }
 
     function getCompanyInfo(string $id): CompanyInfo
@@ -41,19 +44,32 @@ class YtjService
 
             $data = json_decode($response->getContent(), true);
 
+
             $companyInfo = new CompanyInfo;
             $companyInfo->setName($data['results'][0]['name']);
             $companyInfo->setWebsite($data['results'][0]['name']);
             $companyInfo->setCurrentAddress(
-                $data['results'][0]['addresses'][0]['street'].', '
-                .$data['results'][0]['addresses'][0]['city'].', '
-                .$data['results'][0]['addresses'][0]['postCode']);
-            $companyInfo->setCurrentBusinessLine($data['results'][0]
-            ['businessLines'][0]['code']);
+                $this->get_current_address($data['results'][0]['addresses']));
+            $companyInfo->setCurrentBusinessLine(
+                $this->get_current_business_line($data['results'][0]['businessLines']));
             $companyInfo->setId($id);
 
             return $companyInfo;
         }
+    }
+
+    function get_current_address(array $addresses): string{
+        usort($addresses, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+
+        return $addresses[0]['street'].', '
+        .$addresses[0]['city'].', '
+        .$addresses[0]['postCode'];
+    }
+
+    function get_current_business_line(array $business_lines): string{
+        usort($business_lines, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+
+        return $business_lines[0]['code'];
     }
 
     function validate_company_id($company_id) {
