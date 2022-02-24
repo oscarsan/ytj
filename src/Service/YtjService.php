@@ -5,8 +5,7 @@ namespace App\Service;
 use App\Entity\CompanyInfo;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use App\Exception\NotFoundException;
-use Exception;
+use App\Exception\YtjServiceException;
 
 class YtjService
 {
@@ -35,7 +34,7 @@ class YtjService
         }
 
         if ($statusCode == 404){
-            throw new NotFoundException($id);
+            throw new YtjServiceException('not company found in ytj with '.$id, 404);
         }else{
 
             $data = json_decode($response->getContent(), true);
