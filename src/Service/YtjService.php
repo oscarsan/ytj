@@ -47,7 +47,7 @@ class YtjService
 
             $companyInfo = new CompanyInfo;
             $companyInfo->setName($data['results'][0]['name']);
-            $companyInfo->setWebsite($data['results'][0]['name']);
+            $companyInfo->setWebsite($this->get_web_site($data['results'][0]['contactDetails']));
             $companyInfo->setCurrentAddress(
                 $this->get_current_address($data['results'][0]['addresses']));
             $companyInfo->setCurrentBusinessLine(
@@ -70,6 +70,14 @@ class YtjService
         usort($business_lines, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
 
         return $business_lines[0]['code'];
+    }
+
+    function get_web_site(array $contact_details): string{
+        $filtered_details = array_filter($contact_details,
+        fn($contact_detail) => $contact_detail["type"] == "www-adress");
+        usort($filtered_details, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+
+        return $filtered_details[0]['value'];
     }
 
     function validate_company_id($company_id) {
