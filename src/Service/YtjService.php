@@ -18,7 +18,9 @@ class YtjService
 
     function getCompanyInfo(string $id): CompanyInfo
     {
-
+        if (!$this->validate_company_id($id)){
+            throw new YtjServiceException('not a valid '. $id, 406);
+        }
 
         $response = null;
         $statusCode = null;
