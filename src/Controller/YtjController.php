@@ -28,11 +28,17 @@ class YtjController extends AbstractController
         try {
             $companyInfo = $this->ytjService->getCompanyInfo($id);
         } catch (TransportExceptionInterface $e){
-            $response = new Response($e->getMessage(), 503);
+            $data = array(
+                'error' => $e->getMessage(),
+             );
+            $response = new Response($this->json($data), 503);
             $response->headers->set('Content-Type', 'application/json');
             return $response;
         } catch (YtjServiceException $e){
-             $response = new Response($e->getMessage(), $e->getHttpCode());
+            $data = array(
+                'error' => $e->getMessage(),
+             );
+             $response = new Response($this->json($data), $e->getHttpCode());
              $response->headers->set('Content-Type', 'application/json');
              return $response;
         }

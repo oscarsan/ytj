@@ -19,7 +19,7 @@ class YtjService
     function getCompanyInfo(string $id): CompanyInfo
     {
         if (!$this->validate_company_id($id)){
-            throw new YtjServiceException('not a valid '. $id, 406);
+            throw new YtjServiceException('not a valid company id'. $id, 406);
         }
 
         $response = null;
@@ -35,8 +35,8 @@ class YtjService
             throw $e;
         }
 
-        if ($statusCode == 404){
-            throw new YtjServiceException('not company found in ytj with '.$id, 404);
+        if ($statusCode != 200){
+            throw new YtjServiceException('error from ytj service for '.$id, $statusCode);
         }else{
 
             $data = json_decode($response->getContent(), true);
