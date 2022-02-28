@@ -6,6 +6,7 @@ use App\Entity\CompanyInfo;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use App\Exception\YtjServiceException;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 class YtjService
@@ -44,15 +45,20 @@ class YtjService
 
             $data = json_decode($response->getContent(), true);
 
-
             $companyInfo = new CompanyInfo;
-            $companyInfo->setName($data['results'][0]['name']);
-            $companyInfo->setWebsite($this->get_web_site($data['results'][0]['contactDetails']));
-            $companyInfo->setCurrentAddress(
-                $this->get_current_address($data['results'][0]['addresses']));
-            $companyInfo->setCurrentBusinessLine(
-                $this->get_current_business_line($data['results'][0]['businessLines']));
-            $companyInfo->setId($id);
+
+            try {
+                $companyInfo->setName($data['results'][0]['name']);
+                $companyInfo->setWebsite($this->get_web_site($data['results'][0]['contactDetails']));
+                $companyInfo->setCurrentAddress(
+                    $this->get_current_address($data['results'][0]['addresses']));
+                $companyInfo->setCurrentBusinessLine(
+                    $this->get_current_business_line($data['results'][0]['businessLines']));
+                $companyInfo->setId($id);
+            }
+            catch (Exception $e){
+                throw new YtjServiceException('Error parsing information for '.$id, 500);
+            }
 
             return $companyInfo;
         }
