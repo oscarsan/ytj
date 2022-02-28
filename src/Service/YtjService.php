@@ -65,6 +65,8 @@ class YtjService
     }
 
     function get_current_address(array $addresses): string{
+        if (empty($addresses)) return '';
+
         usort($addresses, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
 
         return $addresses[0]['street'].', '
@@ -73,14 +75,19 @@ class YtjService
     }
 
     function get_current_business_line(array $business_lines): string{
+        if (empty($business_lines)) return '';
         usort($business_lines, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
 
         return $business_lines[0]['code'];
     }
 
     function get_web_site(array $contact_details): string{
+        if (empty($contact_details)) return '';
+
         $filtered_details = array_filter($contact_details,
         fn($contact_detail) => $contact_detail["type"] == "www-adress");
+
+        if (empty($filtered_details)) return '';
         usort($filtered_details, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
 
         return $filtered_details[0]['value'];
