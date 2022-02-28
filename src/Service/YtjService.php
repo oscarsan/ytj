@@ -64,21 +64,26 @@ class YtjService
         }
     }
 
+    function get_latest(array $data): array{
+        usort($data, fn ($a, $b) => strtotime($b["registrationDate"] ?? 0) - strtotime($a["registrationDate"] ?? 0));
+        return $data[0];
+    }
+
     function get_current_address(array $addresses): string{
         if (empty($addresses)) return '';
 
-        usort($addresses, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+        $latest_addresses = $this->get_latest($addresses);
 
-        return $addresses[0]['street'].', '
-        .$addresses[0]['city'].', '
-        .$addresses[0]['postCode'];
+        return $latest_addresses['street'] ?? ''.', '
+        .$latest_addresses['city'] ?? ''.', '
+        .$latest_addresses['postCode'] ?? '';
     }
 
     function get_current_business_line(array $business_lines): string{
         if (empty($business_lines)) return '';
-        usort($business_lines, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+        $latest_business_lines = $this->get_latest($business_lines);
 
-        return $business_lines[0]['code'];
+        return $latest_business_lines['code'] ?? '';
     }
 
     function get_web_site(array $contact_details): string{
@@ -88,9 +93,9 @@ class YtjService
         fn($contact_detail) => $contact_detail["type"] == "www-adress");
 
         if (empty($filtered_details)) return '';
-        usort($filtered_details, fn ($a, $b) => strtotime($b["registrationDate"]) - strtotime($a["registrationDate"]));
+        $latest_web_site = $this->get_latest($filtered_details);
 
-        return $filtered_details[0]['value'];
+        return $latest_web_site['value'] ?? '';
     }
 
     function validate_company_id($company_id) {
