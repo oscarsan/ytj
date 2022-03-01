@@ -36,7 +36,7 @@ class YtjService
             $statusCode = $response->getStatusCode();
         }
         catch (TransportExceptionInterface $e){
-            throw $e;
+            throw new YtjServiceException('connection error to YTJ service '.$id.' '.$e->getMessage(), 503);
         }
 
         if ($statusCode != 200){

@@ -27,13 +27,6 @@ class YtjController extends AbstractController
 
         try {
             $companyInfo = $this->ytjService->getCompanyInfo($id);
-        } catch (TransportExceptionInterface $e){
-            $data = array(
-                'error' => $e->getMessage(),
-             );
-            $response = new Response($this->json($data), 503);
-            $response->headers->set('Content-Type', 'application/json');
-            return $response;
         } catch (YtjServiceException $e){
             $data = array(
                 'error' => $e->getMessage(),
